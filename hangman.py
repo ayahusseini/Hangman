@@ -144,7 +144,8 @@ def draw_hangman(num_failed_guesses):
         --------x
         '''
     ]
-    print(hangman_pictures[num_failed_guesses])
+    console.print(
+        f'[bold red]{hangman_pictures[num_failed_guesses]}[/]', justify='center')
 
 
 def display_guessed_letters(answer, guessed_already):
@@ -181,7 +182,7 @@ def refresh_page():
     refresh the page between guesses 
     '''
     console.clear()
-    console.rule('\n')
+    console.rule('')
 
 
 def main():
@@ -197,25 +198,24 @@ def main():
 
     while not game_over(num_wrong, answer, guessed_already):
         # display the current state
+        refresh_page()
         draw_hangman(num_wrong)
         display_guessed_letters(answer, guessed_already)
         # get guess
         user_guess, guessed_already = get_input(guessed_already)
+
         # update the number of wrong guesses
-        if user_guess in set(answer):
-            print('correct.')
-        else:
+        if user_guess not in set(answer):
             num_wrong += 1
-            print(f'incorrect guesses = {num_wrong}')
-            print('incorrect.')
-        refresh_page()
+
     # Decide if the user won or lost
         if guessed_already == set(answer):
             print('YOU WIN')
             return
     else:
-        print('YOU LOSE')
-
+        refresh_page()
+        draw_hangman(num_wrong)
+        console.print('YOU LOSE', style='warning')
         print(f'the correct answer was {answer}')
         return
 
