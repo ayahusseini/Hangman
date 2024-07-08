@@ -2,6 +2,12 @@ from string import ascii_lowercase
 import pathlib
 import random
 
+# Setup rich console
+from rich.console import Console
+from rich.theme import Theme
+
+console = Console(width=40, theme=Theme({"warning": "red on yellow"}))
+
 
 def get_initial_settings():
     '''
@@ -150,11 +156,11 @@ def display_guessed_letters(answer, guessed_already):
 
     for letter in answer:
         if letter in guessed_already:
-            display_string.append(letter)
+            display_string.append(f'[bold white on green]{letter}[/]')
         else:
-            display_string.append('-')
+            display_string.append('[bold black on white]-[/]')
         display_string.append(' ')
-    print(' '.join(display_string))
+    console.print(' '.join(display_string), justify='center')
 
 
 def game_over(num_wrong, answer, guessed_already):
@@ -163,11 +169,19 @@ def game_over(num_wrong, answer, guessed_already):
     Returns True if the game is over, and False otherwise
     '''
     dead_hangman_tries = 6  # number of incorrect attempts that kill hangman
-    if num_wrong == dead_hangman_tries or len(set(answer)) <= len(guessed_already):
+    if num_wrong == dead_hangman_tries:
         print('GAME OVER')
         return True
     else:
         return False
+
+
+def refresh_page():
+    '''
+    refresh the page between guesses 
+    '''
+    console.clear()
+    console.rule('\n')
 
 
 def main():
@@ -188,21 +202,22 @@ def main():
         # get guess
         user_guess, guessed_already = get_input(guessed_already)
         # update the number of wrong guesses
-        if user_guess in answer:
+        if user_guess in set(answer):
             print('correct.')
         else:
             num_wrong += 1
+            print(f'incorrect guesses = {num_wrong}')
             print('incorrect.')
+        refresh_page()
     # Decide if the user won or lost
-    if guessed_already == set(answer):
-        print('YOU WIN')
+        if guessed_already == set(answer):
+            print('YOU WIN')
+            return
     else:
         print('YOU LOSE')
-        if len(set(answer)) <= len(guessed_already):
-            print('You guessed more letters than there are in the answer!')
-        elif num_wrong == 6:
-            print('you ran out of guesses')
+
         print(f'the correct answer was {answer}')
+        return
 
 
 if __name__ == '__main__':
