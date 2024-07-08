@@ -1,6 +1,37 @@
 from string import ascii_lowercase
+import pathlib
+import random
 
-guessed_already = []
+
+def get_initial_settings():
+    '''
+    Gets the minimum and maximum answer lengths from the user.
+    Return:
+        minlength,maxlength (int) 
+    '''
+    while True:
+        minlength = input('please provide the minimum word length:')
+        maxlength = input('please provide the maximum word length:')
+        try:
+            return int(minlength), int(maxlength)
+        except:
+            print('please provide positive integers')
+
+
+def random_answer_generator(min_length, max_length):
+    '''
+    Select a random answer of length between min_length and max_length (inclusive) from words.txt. The answer will be in lowercase. 
+    '''
+    print(1)
+    words = pathlib.Path(__file__).parent / 'words.txt'
+    allowed_words = []
+    print(words)
+    allowed_words = []
+    for word in words.read_text(encoding='utf-8').splitlines():
+        if len(word) >= min_length and len(word) <= max_length:
+            allowed_words.append(word.lower())
+
+    return random.choice(allowed_words)
 
 
 def validate_input(user_guess, guessed_already):
@@ -28,7 +59,7 @@ def get_input(guessed_already):
     while True:
         user_guess = input('Try a letter: ')
         if validate_input(user_guess, guessed_already):
-            guessed_already.append(user_guess.lower())
+            guessed_already.add(user_guess.lower())
             return user_guess.lower(), guessed_already
 
 
@@ -120,7 +151,6 @@ def display_guessed_letters(answer, guessed_already):
     for letter in answer:
         if letter in guessed_already:
             display_string.append(letter)
-            print(display_string)
         else:
             display_string.append('-')
         display_string.append(' ')
@@ -133,9 +163,47 @@ def game_over(num_wrong, answer, guessed_already):
     Returns True if the game is over, and False otherwise
     '''
     dead_hangman_tries = 6  # number of incorrect attempts that kill hangman
-    if num_wrong == dead_hangman_tries:
-        return True
-    if len(set(answer)) <= len(guessed_already):
+    if num_wrong == dead_hangman_tries or len(set(answer)) <= len(guessed_already):
+        print('GAME OVER')
         return True
     else:
         return False
+
+
+def main():
+
+    print('HANGMAN')
+    min_length, max_length = get_initial_settings()
+    answer = random_answer_generator(min_length, max_length)
+
+    # wrong guesses counter
+    num_wrong = 0
+    # letters already guessed
+    guessed_already = set()
+
+    while not game_over(num_wrong, answer, guessed_already):
+        # display the current state
+        draw_hangman(num_wrong)
+        display_guessed_letters(answer, guessed_already)
+        # get guess
+        user_guess, guessed_already = get_input(guessed_already)
+        # update the number of wrong guesses
+        if user_guess in answer:
+            print('correct.')
+        else:
+            num_wrong += 1
+            print('incorrect.')
+    # Decide if the user won or lost
+    if guessed_already == set(answer):
+        print('YOU WIN')
+    else:
+        print('YOU LOSE')
+        if len(set(answer)) <= len(guessed_already):
+            print('You guessed more letters than there are in the answer!')
+        elif num_wrong == 6:
+            print('you ran out of guesses')
+        print(f'the correct answer was {answer}')
+
+
+if __name__ == '__main__':
+    main()
